@@ -74,12 +74,16 @@ class Module {
 ///
 /// The type provided by this annotation can be further specified by including a
 /// [Qualifier] annotation.
-const provide = const Provide._();
+const provide = const Provide();
 
 /// **INTERNAL ONLY**: Might be exposed if we add flags or other properties.
 @visibleForTesting
 class Provide {
-  const Provide._();
+  final Type _abstraction;
+
+  const factory Provide([Type _abstraction]) = Provide._;
+
+  const Provide._([this._abstraction = null]);
 }
 
 /// An injectable class or module provider that provides a single instance.
@@ -152,6 +156,11 @@ const asynchronous = const Asynchronous._();
 @visibleForTesting
 class Asynchronous {
   const Asynchronous._();
+}
+
+const multiple = const Multiple._();
+class Multiple {
+  const Multiple._();
 }
 
 /// Annotates an abstract class used as a blueprint to generate an injector.

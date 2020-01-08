@@ -237,4 +237,7 @@ class SymbolPath implements Comparable<SymbolPath> {
 
   @override
   String toString() => '$SymbolPath {${toAbsoluteUri()}}';
+
+  @override
+  String toJson() => '${toAbsoluteUri()}';
 }

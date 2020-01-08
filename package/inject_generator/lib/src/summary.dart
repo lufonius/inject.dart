@@ -7,7 +7,9 @@
 /// Internal library, **do not export**.
 library inject.src.summary;
 
+import 'package:analyzer/dart/element/type.dart';
 import 'package:inject_generator/src/source/injected_type.dart';
+import 'package:inject_generator/src/source/lookup_key.dart';
 import 'package:inject_generator/src/source/symbol_path.dart';
 import 'package:quiver/collection.dart';
 
@@ -16,3 +18,4 @@ part 'summary/injector_summary.dart';
 part 'summary/library_summary.dart';
 part 'summary/module_summary.dart';
 part 'summary/provider_summary.dart';
+part 'summary/factory_summary.dart';

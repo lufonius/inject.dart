@@ -109,8 +109,10 @@ class InjectorGraphResolver {
 
     var injectables = <LookupKey, InjectableSummary>{};
 
-    Future<Null> addInjectableIfExists(LookupKey key,
-        {@required SymbolPath requestedBy}) async {
+    Future<Null> addInjectableIfExists(
+        LookupKey key,
+        {@required SymbolPath requestedBy}
+    ) async {
       // Modules take precedence.
       bool isProvidedByAModule = providersByModules.containsKey(key);
       bool isSeen = injectables.containsKey(key);

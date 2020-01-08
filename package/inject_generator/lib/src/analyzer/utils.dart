@@ -2,16 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:inject_generator/src/context.dart';
 import 'package:inject_generator/src/source/injected_type.dart';
 import 'package:inject_generator/src/source/lookup_key.dart';
 import 'package:inject_generator/src/source/symbol_path.dart';
+import 'package:inject/inject.dart';
 
 /// Constructs a serializable path to [element].
 SymbolPath getSymbolPath(Element element) {
-  if (element is TypeDefiningElement && element.kind == ElementKind.DYNAMIC)) {
+  if (element is TypeDefiningElement && element.kind == ElementKind.DYNAMIC) {
     throw new ArgumentError('Dynamic element type not supported. This is a '
         'package:inject bug. Please report it.');
   }
@@ -85,8 +87,11 @@ ElementAnnotation _getAnnotation(Element element, SymbolPath annotationSymbol,
 ///
 /// Injectability is determined by checking if the class declaration or one of
 /// its constructors is annotated with `@Provide()`.
-bool isInjectableClass(ClassElement clazz) =>
-    hasProvideAnnotation(clazz) || clazz.constructors.any(hasProvideAnnotation);
+bool isInjectableClass(ClassElement clazz) {
+    var isInjectable = hasProvideAnnotation(clazz) || clazz.constructors.any(hasProvideAnnotation);
+
+    return isInjectable;
+}
 
 /// Determines if [clazz] is a singleton class.
 ///
@@ -138,6 +143,64 @@ bool isInjectorClass(ClassElement clazz) => hasInjectorAnnotation(clazz);
 
 /// Whether [e] is annotated with `@Provide()`.
 bool hasProvideAnnotation(Element e) => _hasAnnotation(e, SymbolPath.provide);
+
+// TODO: we need to check if:
+// a class implements the abstraction
+// a method has the returnType of the abstraction
+// (maybe we need to create a separate factory annotation)
+DartType getAbstractionsForClass(ClassElement e) {
+  var annotation = _getAnnotation(e, SymbolPath.provide);
+
+  DartObject abstractionAsObj = annotation.computeConstantValue().getField("_abstraction");
+
+  return abstractionAsObj == null ? null : abstractionAsObj.toTypeValue();
+}
+
+DartType getProvideImplementationFromClass(ClassElement element) {
+  return element.type;
+}
+
+DartType getProvideAbstractionFromClass(ClassElement element) {
+  var abstraction = getAbstractionFromProvideAnnotation(
+      element,
+      (ClassElement elementParam) => elementParam.type
+  );
+
+  return abstraction;
+}
+
+DartType getProvideImplementationFromPropertyAccessor(FieldElement element) {
+  return element.getter.returnType;
+}
+
+DartType getProvideAbstractionFromPropertyAccessor(FieldElement element) {
+  var abstraction = getAbstractionFromProvideAnnotation(
+      element,
+      (FieldElement elementParam) => elementParam.getter.returnType
+  );
+
+  return abstraction;
+}
+
+DartType getProvideImplementationFromMethod(MethodElement element) {
+  return element.returnType;
+}
+
+DartType getProvideAbstractionFromMethod(MethodElement element) {
+  var abstraction = getAbstractionFromProvideAnnotation(
+      element,
+      (MethodElement elementParam) => elementParam.returnType
+  );
+
+  return abstraction;
+}
+
+DartType getAbstractionFromProvideAnnotation<T extends Element>(Element e, DartType defaultAbstraction(T e)) {
+  var annotation = _getAnnotation(e, SymbolPath.provide);
+  DartObject asObj = annotation.computeConstantValue().getField("_abstraction");
+
+  return asObj?.toTypeValue() ?? defaultAbstraction(e);
+}
 
 /// Whether [e] is annotated with `@Singleton()`.
 bool hasSingletonAnnotation(Element e) =>

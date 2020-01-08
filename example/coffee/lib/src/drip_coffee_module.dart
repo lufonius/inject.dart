@@ -4,10 +4,13 @@
 
 import 'dart:async';
 
+import 'package:inject.example.coffee/src/dartiello_tank.dart';
+import 'package:inject.example.coffee/src/tank.dart';
 import 'package:inject/inject.dart';
 
 import 'electric_heater.dart';
 import 'heater.dart';
+import 'liquid.dart';
 import 'pump.dart';
 import 'thermosiphon.dart';
 
@@ -32,40 +35,9 @@ class DripCoffeeModule {
   @modelName
   String provideModel() => 'DripCoffeeStandard';
 
-  /// This demonstrates that a dependency can be instantiated asynchronously
-  /// (even though there's no need for it in this artificial example).
-  ///
-  /// An asynchronous dependency is returned by a provider as a [Future], and
-  /// is annotated with `@asynchronous`. This tell the injection framework that
-  /// it needs to `await` on this dependency before instantiating other objects
-  /// that depend on it. In our example, [provideElectricity] depends on
-  /// [PowerOutlet]. Note that [provideElectricity] is not aware of the
-  /// asynchronous nature of [PowerOutlet]. This feature allows you to switch
-  /// between synchronous and asynchronous providers without a major refactoring
-  /// downstream.
-  @provide
-  @asynchronous
-  Future<PowerOutlet> providePowerOutlet() async => new PowerOutlet();
-
-  /// An example of a singleton provider.
-  ///
-  /// Calling it multiple times will return the same instance.
-  @provide
-  @singleton
-  Electricity provideElectricity(PowerOutlet outlet) => new Electricity(outlet);
-
-  /// Another example of an asynchronous dependency.
-  ///
-  /// Note that this provider depends on the synchronously provided
-  /// [Electricity], which in turn depends on asynchronously provided
-  /// [PowerOutlet]. The big point here is that _a provider does not need to be
-  /// aware of how its dependencies are resolved_.
-  @provide
-  @asynchronous
-  Future<Heater> provideHeater(Electricity e) async => new ElectricHeater(e);
-
-  /// A most basic provider that provides synchronously instantiated
-  /// non-singleton [Heater] objects.
-  @provide
-  Pump providePump(Heater heater) => new Thermosiphon(heater);
+  @Provide(Tank)
+  @multiple
+  Tank getDartielloTank(Liquid liquid) {
+    return DartielloTank(liquid);
+  }
 }

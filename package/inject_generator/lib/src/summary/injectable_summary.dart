@@ -4,18 +4,11 @@
 
 part of inject.src.summary;
 
-/// Result of analyzing a class whose constructor is annotated with `@Provide()`.
 class InjectableSummary {
-  /// Location of the analyzed class.
   final SymbolPath clazz;
 
-  /// Summary about the constructor annotated with `@Provide()`.
-  final ProviderSummary constructor;
+  final ProviderSummary provider;
 
-  /// Constructor.
-  ///
-  /// [clazz] is the path to the injectable class. [constructor] carries summary
-  /// about the constructor annotated with `@Provide()`.
   factory InjectableSummary(SymbolPath clazz, ProviderSummary constructor) {
     if (clazz == null) {
       throw new ArgumentError.notNull('clazz');
@@ -27,15 +20,14 @@ class InjectableSummary {
     return new InjectableSummary._(clazz, constructor);
   }
 
-  InjectableSummary._(this.clazz, this.constructor);
+  InjectableSummary._(this.clazz, this.provider);
 
-  /// Serializes this summary to JSON.
   Map<String, dynamic> toJson() {
-    return {'name': clazz.symbol, 'constructor': constructor};
+    return {'name': clazz.symbol, 'provider': provider};
   }
 
   @override
   String toString() =>
       '$InjectableSummary ' +
-      {'clazz': clazz, 'constructor': constructor}.toString();
+      {'clazz': clazz, 'constructor': provider}.toString();
 }

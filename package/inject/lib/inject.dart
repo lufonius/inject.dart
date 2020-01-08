@@ -11,6 +11,8 @@ export 'src/api/annotations.dart'
         injector,
         module,
         provide,
+        Provide,
         singleton,
         Injector,
+        multiple,
         Qualifier;

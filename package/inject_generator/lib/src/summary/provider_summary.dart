@@ -49,35 +49,28 @@ String provideKindName(ProviderKind kind) {
 /// Contains information about a method, constructor, factory or a getter
 /// annotated with `@provide`.
 class ProviderSummary {
-  /// Name of the annotated method.
   final String name;
-
-  /// Provider kind.
   final ProviderKind kind;
-
-  /// Type of the instance that will be returned.
-  final InjectedType injectedType;
-
-  /// Whether or not this provider provides a singleton.
+  final LookupKey implementationClass;
+  final LookupKey abstractionClass;
+  final FactorySummary factorySummary;
+  final bool isMultiple;
   final bool isSingleton;
-
-  /// Whether this provider is annotated with `@asynchronous`.
   final bool isAsynchronous;
-
-  /// Dependencies required to create an instance of [injectedType].
   final List<InjectedType> dependencies;
 
-  /// Create a new summary of a provider that returns an instance of
-  /// [injectedType].
-  factory ProviderSummary(
-    InjectedType injectedType,
+factory ProviderSummary(
     String name,
-    ProviderKind kind, {
+    ProviderKind kind,
+    LookupKey implementationClass,
+    LookupKey abstractionClass,
+    FactorySummary factorySummary, {
     List<InjectedType> dependencies: const [],
+    bool multiple: false,
     bool singleton: false,
-    bool asynchronous: false,
+    bool asynchronous: false
   }) {
-    if (injectedType == null) {
+    if (factorySummary == null) {
       throw new ArgumentError.notNull('lookupKey');
     }
     if (name == null) {
@@ -92,6 +85,9 @@ class ProviderSummary {
     if (singleton == null) {
       throw new ArgumentError.notNull('singleton');
     }
+    if (multiple == null) {
+      throw new ArgumentError.notNull('singleton');
+    }
     if (asynchronous && kind != ProviderKind.method) {
       throw new ArgumentError(
           'Only methods can be asynchronous providers but found $kind $name.');
@@ -99,7 +95,10 @@ class ProviderSummary {
     return new ProviderSummary._(
       name,
       kind,
-      injectedType,
+      implementationClass,
+      abstractionClass,
+      factorySummary,
+      multiple,
       singleton,
       asynchronous,
       new List<InjectedType>.unmodifiable(dependencies),
@@ -109,7 +108,10 @@ class ProviderSummary {
   ProviderSummary._(
     this.name,
     this.kind,
-    this.injectedType,
+    this.implementationClass,
+    this.abstractionClass,
+    this.factorySummary,
+    this.isMultiple,
     this.isSingleton,
     this.isAsynchronous,
     this.dependencies,
@@ -120,7 +122,10 @@ class ProviderSummary {
     return {
       'name': name,
       'kind': provideKindName(kind),
-      'injectedType': injectedType,
+      'implementationClass': implementationClass,
+      'abstractionClass': abstractionClass,
+      'factorySummary': factorySummary,
+      'multiple': isMultiple,
       'singleton': isSingleton,
       'asynchronous': isAsynchronous,
       'dependencies': dependencies
@@ -133,7 +138,10 @@ class ProviderSummary {
       {
         'name': name,
         'kind': kind,
-        'injectedType': injectedType,
+        'implementationClass': implementationClass,
+        'abstractionClass': abstractionClass,
+        'factory': factorySummary,
+        'multiple': isMultiple,
         'singleton': isSingleton,
         'asynchronous': isAsynchronous,
         'dependencies': dependencies

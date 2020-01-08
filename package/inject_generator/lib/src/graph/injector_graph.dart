@@ -69,9 +69,9 @@ class DependencyProvidedByInjectable extends ResolvedDependency {
   )   : this.summary = summary,
         super(
           new LookupKey(summary.clazz),
-          summary.constructor.isSingleton,
+          summary.provider.isSingleton,
           false,
-          summary.constructor.dependencies,
+          summary.provider.dependencies,
         );
 }
 

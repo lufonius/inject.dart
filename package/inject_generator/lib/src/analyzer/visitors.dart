@@ -24,7 +24,7 @@ abstract class InjectLibraryVisitor {
   /// Called when [clazz] is annotated with `@provide`.
   ///
   /// If [clazz] is annotated with `@singleton`, then [singleton] is true.
-  void visitInjectable(ClassElement clazz, bool singleton);
+void visitInjectable(ClassElement clazz, bool singleton);
 
   /// Called when [clazz] is annotated with `@injector`.
   ///

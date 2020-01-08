@@ -107,9 +107,19 @@ ModuleSummary _moduleFromJson(Uri assetUri, Map<String, dynamic> json) {
   return new ModuleSummary(clazz, providers);
 }
 
+FactorySummary _factoryFromJson(Map<String, dynamic> json) {
+  String kindName = json['kind'];
+  SymbolPath factoryImplementationPath = SymbolPath.fromAbsoluteUri(json['factoryImplementationPath']);
+  bool isCustom = json['custom'] as bool;
+
+  return new FactorySummary(factoryKindFromName(kindName), factoryImplementationPath, isCustom: isCustom);
+}
+
 ProviderSummary _providerFromJson(Map<String, dynamic> json) {
   String name = json['name'] as String;
-  var injectedType = new InjectedType.fromJson(json['injectedType']);
+  var abstractionClass = new LookupKey.fromJson(json['abstractionClass']);
+  var implementationClass = new LookupKey.fromJson(json['implementationClass']);
+  var factorySummary = _factoryFromJson(json['factorySummary']);
   var singleton = json['singleton'] as bool;
   var asynchronous = json['asynchronous'] as bool;
   var kind = json['kind'] as String;
@@ -118,9 +128,11 @@ ProviderSummary _providerFromJson(Map<String, dynamic> json) {
       .map<InjectedType>((dependency) => new InjectedType.fromJson(dependency))
       .toList();
   return new ProviderSummary(
-    injectedType,
     name,
     providerKindFromName(kind),
+    abstractionClass,
+    implementationClass,
+    factorySummary,
     singleton: singleton,
     asynchronous: asynchronous,
     dependencies: dependencies,

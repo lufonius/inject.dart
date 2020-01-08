@@ -18,5 +18,5 @@ import 'package:path/path.dart' as path;
 import 'package:quiver/core.dart';
 
 part 'graph/injector_graph.dart';
-part 'graph/injector_graph_resolver.dart';
+// part 'graph/injector_graph_resolver.dart';
 part 'graph/summary_reader.dart';

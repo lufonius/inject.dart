@@ -12,6 +12,7 @@ import 'package:inject_generator/src/analyzer/utils.dart';
 import 'package:inject_generator/src/analyzer/visitors.dart';
 import 'package:inject_generator/src/build/abstract_builder.dart';
 import 'package:inject_generator/src/context.dart';
+import 'package:inject_generator/src/source/lookup_key.dart';
 import 'package:inject_generator/src/source/symbol_path.dart';
 import 'package:inject_generator/src/summary.dart';
 
@@ -122,13 +123,13 @@ class _SummaryBuilderVisitor extends InjectLibraryVisitor {
     ProviderSummary constructorSummary;
     if (annotatedConstructors.length == 1) {
       // Use the explicitly annotated constructor.
-      constructorSummary = _createConstructorProviderSummary(
-          annotatedConstructors.single, singleton);
+      constructorSummary = _createProviderSummaryForClass(
+          clazz, annotatedConstructors.single, singleton);
     } else if (classIsAnnotated) {
       if (clazz.constructors.length <= 1) {
         // This is the case of a default or an only constructor.
-        constructorSummary = _createConstructorProviderSummary(
-            clazz.constructors.single, singleton);
+        constructorSummary = _createProviderSummaryForClass(
+            clazz, clazz.constructors.single, singleton);
       }
     }
 
@@ -228,10 +229,15 @@ class _ProviderSummaryVisitor extends InjectClassVisitor {
       return;
     }
 
+    var abstractionClass = getProvideAbstractionFromMethod(method);
+    var implementationClass = getProvideImplementationFromMethod(method);
+
     var summary = new ProviderSummary(
-      getInjectedType(returnType, qualifier: qualifier),
       method.name,
       ProviderKind.method,
+      LookupKey(getSymbolPath(abstractionClass.element)),
+      LookupKey(getSymbolPath(implementationClass.element)),
+      new FactorySummary(FactoryKind.method, getSymbolPath(method), isCustom: true),
       singleton: singleton,
       asynchronous: asynchronous,
       dependencies: method.parameters
@@ -268,14 +274,18 @@ class _ProviderSummaryVisitor extends InjectClassVisitor {
 
   @override
   void visitProvideGetter(FieldElement field, bool singleton) {
+    var abstractionClass = getProvideAbstractionFromPropertyAccessor(field);
+    var implementationClass = getProvideImplementationFromPropertyAccessor(field);
+
     if (!_checkReturnType(field.getter, field.getter.returnType.element)) {
       return;
     }
-    var returnType = field.getter.returnType;
     var summary = new ProviderSummary(
-      getInjectedType(returnType),
       field.name,
       ProviderKind.getter,
+      LookupKey(getSymbolPath(abstractionClass.element)),
+      LookupKey(getSymbolPath(implementationClass.element)),
+      new FactorySummary(FactoryKind.getter, getSymbolPath(field), isCustom: true),
       singleton: singleton,
       dependencies: const [],
     );
@@ -301,13 +311,19 @@ class _ProviderSummaryVisitor extends InjectClassVisitor {
   }
 }
 
-ProviderSummary _createConstructorProviderSummary(
-    ConstructorElement element, bool isSingleton) {
-  var returnType = element.enclosingElement.type;
+ProviderSummary _createProviderSummaryForClass(
+  ClassElement annotatedClass, ConstructorElement constructor, bool isSingleton) {
+  var abstractionClass = getProvideAbstractionFromClass(annotatedClass);
+  var implementationClass = getProvideImplementationFromClass(annotatedClass);
+  // here we get the types we passed to the provider
   return new ProviderSummary(
-      getInjectedType(returnType), element.name, ProviderKind.constructor,
+      constructor.name,
+      ProviderKind.constructor,
+      LookupKey(getSymbolPath(implementationClass.element)),
+      LookupKey(getSymbolPath(abstractionClass.element)),
+      new FactorySummary(FactoryKind.constructor, getSymbolPath(annotatedClass)),
       singleton: isSingleton,
-      dependencies: element.parameters
+      dependencies: constructor.parameters
           .map((p) {
             var qualifier;
             if (hasQualifier(p)) {
@@ -321,7 +337,7 @@ ProviderSummary _createConstructorProviderSummary(
               // Clazz(this._some);
               //
               // Extract @someQualifier as the qualifier.
-              final clazz = element.enclosingElement;
+              final clazz = constructor.enclosingElement;
               final formal = clazz.getField(p.name);
               if (hasQualifier(formal)) {
                 qualifier = extractQualifier(formal);

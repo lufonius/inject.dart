@@ -8,9 +8,9 @@ import 'drip_coffee_module.dart';
 import 'heater.dart';
 import 'pump.dart';
 
-class CoffeeMaker {
+@Provide(CoffeeMaker)
+class NespressoCoffeeMaker implements CoffeeMaker {
   final Heater _heater;
-  final Pump _pump;
 
   @modelName
   final String _model;
@@ -18,14 +18,17 @@ class CoffeeMaker {
   @brandName
   final String _brand;
 
-  @provide
-  CoffeeMaker(this._heater, this._pump, this._brand, this._model);
+  NespressoCoffeeMaker(this._heater, this._brand, this._model);
 
   void brew() {
     _heater.on();
-    _pump.pump();
+   // _pump.pump();
     print(' [_]P coffee! [_]P');
     print(' Thanks for using $_model by $_brand');
     _heater.off();
   }
+}
+
+abstract class CoffeeMaker {
+  void brew();
 }

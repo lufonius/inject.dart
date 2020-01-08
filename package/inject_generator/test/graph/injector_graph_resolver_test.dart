@@ -129,7 +129,7 @@ void main() {
                   'This dependency is requested by FooInjector defined in asset:foo/foo.dart.')),
           isTrue);
     });
-  }, skip: 'Currently not working with the extenral build system');
+  });
 
   group('$Cycle', () {
     test('has order-independent hashCode and operator==', () {
